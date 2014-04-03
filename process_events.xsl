@@ -19,44 +19,35 @@
       <xsl:variable name="url" select="resolve-uri(ixsl:eval(string($code)), $base)"/>
       <xsl:variable name="results" select="doc($url)"/>
       <xsl:apply-templates select="doc($url)" mode="process-results"/>
-      <p>xml:base from document: <xsl:value-of select="$base"/></p>
+<!--      <p>xml:base from document: <xsl:value-of select="$base"/></p>
       <p>Here's the code: <xsl:value-of select="$code"/></p>
-      <p>Calculated URI: <xsl:value-of select="$url"/></p>
+-->      <p>Results retrieved from: <xsl:value-of select="$url"/></p>
     </xsl:result-document>
+  </xsl:template>
+  
+  <!-- works: ixsl:onchange ixsl:onclick ixsl:onkeydown ixsl:onkeypress ixsl:onkeyup (only the latter shows the actual text in the event) ixsl:onmousedown -->
+  <!-- no effect: ixsl:onforminput  ixsl:onblur ixsl:onfocus ixsl:onformchange ixsl:oninput ixsl:onload -->
+  <!-- ixsl:onmousedown fires, but only when you click on the input, not the arrow part associated to the list -->
+  <xsl:template match="input[@id='cardinalDirectionsSuggestions-q']" mode="ixsl:onchange">
+    <xsl:variable name="place_name" select="@prop:value"/>
+    <xsl:variable name="bbox" select="ixsl:page()//datalist[@id='place_search_results']/option[text() eq $place_name]/@data-bbox"/>
+    <xsl:variable name="west" select="tokenize($bbox,',')[1]"/>
+    <xsl:variable name="south" select="tokenize($bbox,',')[2]"/>
+    <xsl:variable name="east" select="tokenize($bbox,',')[3]"/>
+    <xsl:variable name="north" select="tokenize($bbox,',')[4]"/>
+    
+<!--    <xsl:result-document href="#results" method="ixsl:replace-content">
+      <p>Selection: <xsl:value-of select="@prop:value"/></p>
+      <ixsl:set-attribute name="data-value" select="$bbox"/>
+      <p>Datalist: <xsl:value-of select="ixsl:page()//datalist[@id='place_search_results']/option[text() eq $place_name]/@data-bbox"/></p>
+    </xsl:result-document>
+-->
+    <xsl:result-document href="?select=//output[@id='west']" method="ixsl:replace-content"><xsl:value-of select="$west"/></xsl:result-document>
+    <xsl:result-document href="?select=//output[@id='south']" method="ixsl:replace-content"><xsl:value-of select="$south"/></xsl:result-document>
+    <xsl:result-document href="?select=//output[@id='east']" method="ixsl:replace-content"><xsl:value-of select="$east"/></xsl:result-document>
+    <xsl:result-document href="?select=//output[@id='north']" method="ixsl:replace-content"><xsl:value-of select="$north"/></xsl:result-document>
   </xsl:template>
 
-<!--  <xsl:template match="input[@id='cardinalDirectionsSuggestions-q']" mode="ixsl:onchange">
-    <xsl:result-document href="#results" method="ixsl:replace-content">
-      <p>Selection: <xsl:value-of select="@prop:value"/></p>
-      <p>Datalist: <xsl:value-of select="ixsl:page()//datalist[@id='place_search_results']/option[@prop:selected='false']/*"/></p>
-    </xsl:result-document>
-  </xsl:template>
--->  
-  <xsl:template match="input[@id='cardinalDirectionsSuggestions-q']" mode="ixsl:onfocus">
-    <xsl:result-document href="#results" method="ixsl:append-content">
-      <p> input[@id='cardinalDirectionsSuggestions-q'] ixsl:onfocus</p>
-    </xsl:result-document>
-  </xsl:template>
-  <xsl:template match="input[@id='cardinalDirectionsSuggestions-q']" mode="ixsl:onblur">
-    <xsl:result-document href="#results" method="ixsl:append-content">
-      <p> input[@id='cardinalDirectionsSuggestions-q'] ixsl:onblur</p>
-    </xsl:result-document>
-  </xsl:template>
-  <xsl:template match="input[@id='cardinalDirectionsSuggestions-q']" mode="ixsl:onselect">
-    <xsl:result-document href="#results" method="ixsl:append-content">
-      <p> input[@id='cardinalDirectionsSuggestions-q'] ixsl:onselect</p>
-    </xsl:result-document>
-  </xsl:template>
-  
-  <xsl:template match="datalist[@id='place_search_results']" mode="ixsl:onchange">
-    <!--<ixsl:set-attribute name="prop:selected" select="'true'"/>-->
-    <xsl:result-document href="#results" method="ixsl:append-content">
-      <p>Datalist event</p>
-    </xsl:result-document>
-  </xsl:template>
-  
-  
-  
   <xsl:template match="select[@id='schemes']" mode="ixsl:onchange">
     <!-- this result-document technique is described here: http://www.saxonica.com/ce/user-doc/1.1/index.html#!coding/result-documents -->
     <xsl:result-document href="?select=//datalist[@id='categoriesSuggestions']" method="ixsl:replace-content">
@@ -78,10 +69,10 @@
         </xsl:for-each>
       </xsl:result-document>
     </xsl:if>
-    <xsl:result-document href="#results" method="ixsl:replace-content">
+<!--    <xsl:result-document href="#results" method="ixsl:replace-content">
       <p>Value of the input: <xsl:value-of select="@prop:value"/></p>
     </xsl:result-document>
-  </xsl:template>
+-->  </xsl:template>
   
   <xsl:function name="geogratis:getCategorySuggestions"  as="element()*">
     <xsl:variable name="schemesSelect" select="ixsl:page()//select[@id='schemes']"/>
@@ -104,7 +95,7 @@
   </xsl:template>
   
   
-  <xsl:template match="input[@id='get-cardinalDirectionsSuggestions-q-button']" mode="ixsl:onclick">
+  <xsl:template match="button[@id='get-cardinalDirectionsSuggestions-q-button']" mode="ixsl:onclick">
     <xsl:variable name="srchInput" select="ixsl:page()//input[@id='cardinalDirectionsSuggestions-q']"/>
     <xsl:if test="string-length($srchInput/@prop:value) &gt; 2">
       <xsl:variable name="tref" select="$srchInput/ancestor::div[1]/@data-tref"/> 

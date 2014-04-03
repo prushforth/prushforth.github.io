@@ -19,8 +19,7 @@
   </xsl:template>
   <xsl:template match="atom:uriQuery" mode="generate-ui">
     <!-- TODO Fix the templates in the source -->
-    <xsl:variable name="vtref" select="replace(replace(@tref,'\{\+q\}','q={q}'),'\{bbox\}','&amp;bbox={bbox*}')"/>
-    
+    <xsl:variable name="vtref" select="replace(replace(@tref,'\{\+q\}','q={q}'),'\{bbox\}','&amp;bbox={+bbox}')"/>
     <div data-tref="{$vtref}" id="uriQuery">
       <xsl:apply-templates select="*" mode="generate-ui"/>
     </div>
@@ -87,7 +86,9 @@
     </div>
   </xsl:template>
   <xsl:template match="atom:uriQuery/atom:bbox" mode="generate-ui">
-    <div data-tref="{@tref}" id="bbox">
+    <!-- TODO Fix the templates in the source  replace(@tref,'cardinalDirections\*','+cardinalDirections')-->
+    <xsl:variable name="vtref" select="replace(@tref,'cardinalDirections\*','+cardinalDirections')"/>
+    <div data-tref="{$vtref}" id="bbox">
       <xsl:apply-templates select="atom:cardinalDirections" mode="generate-ui"/>
     </div>
   </xsl:template>
@@ -95,7 +96,11 @@
   <xsl:template match="atom:cardinalDirections" mode="generate-ui">
     <div id="cardinalDirections" data-tref="{@tref}">
       <xsl:apply-templates select="atom:link[@rel='suggestions']"  mode="generate-ui"/>
-      <xsl:apply-templates select="atom:west|atom:south|atom:east|atom:north"  mode="generate-ui"/>
+      <table><tbody>
+        <tr>
+          <xsl:apply-templates select="atom:west|atom:south|atom:east|atom:north"  mode="generate-ui"/>
+        </tr>
+      </tbody></table>
     </div>
   </xsl:template>
   
@@ -104,18 +109,13 @@
       <label for="cardinalDirectionsSuggestions-q">Location search:</label>
       <input id="cardinalDirectionsSuggestions-q" type="text" list="place_search_results" placeholder="Type a place or map name"/>
       <datalist id="place_search_results"></datalist>
-      <span>
-        <input id="get-cardinalDirectionsSuggestions-q-button" type="button" ><i>Search</i></input>
-      </span>
+      <button id="get-cardinalDirectionsSuggestions-q-button" type="button">Find</button>
     </div>
   </xsl:template>
   
   <xsl:template match="atom:west|atom:south|atom:east|atom:north" mode="generate-ui">
-    <label for="{local-name()}"><xsl:value-of select="local-name()"/></label>
-    <output name="{local-name()}" type="text"/>
-    <xsl:if test="position() eq last()">
-      <xsl:value-of select="$nl"/><br/>
-    </xsl:if>
+    <td><label for="{local-name()}"><xsl:value-of select="normalize-space(concat(' ',upper-case(substring(local-name(),1,1)),substring(local-name(),2),': '))"/></label></td>
+    <td><output id="{local-name()}" type="text"/></td>
   </xsl:template>
   
   <xsl:template match="atom:uriQuery/atom:alt" mode="generate-ui">
@@ -124,7 +124,7 @@
   
   <xsl:template match="atom:uriQuery/atom:q" mode="generate-ui">
     <label for="q">Search:</label>
-    <input type="text" id="q" autofocus="true"/><br/>
+    <input type="text" id="q" autofocus="true" placeholder="Type a keyword to search for"/><br/>
   </xsl:template>
   
   <xsl:template match="atom:uriQuery/atom:editedMin" mode="generate-ui">
